@@ -1,4 +1,4 @@
-package br.com.wsp.transfer_api;
+package br.com.wsp.transfer;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
