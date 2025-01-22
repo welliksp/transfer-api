@@ -4,4 +4,5 @@ import br.com.wsp.transfer.dto.TransferDto;
 
 public interface ITransferService {
 
+    TransferDto save(TransferDto transferDto);
 }

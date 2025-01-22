@@ -1,19 +1,13 @@
 package br.com.wsp.transfer.model;
 
+import br.com.wsp.transfer.model.enums.TransferStatus;
 import jakarta.persistence.*;
-import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
 @Table(name = "transfer")
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Transfer implements Serializable {
 
     @Id
@@ -33,4 +27,63 @@ public class Transfer implements Serializable {
     private LocalDateTime scheduleDate;
 
     private Float amount;
+
+    @Enumerated(EnumType.STRING)
+    private TransferStatus status;
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getOriginAccount() {
+        return originAccount;
+    }
+
+    public String getDestinationAccount() {
+        return destinationAccount;
+    }
+
+    public LocalDateTime getTransferDate() {
+        return transferDate;
+    }
+
+    public LocalDateTime getScheduleDate() {
+        return scheduleDate;
+    }
+
+    public Float getAmount() {
+        return amount;
+    }
+
+    public TransferStatus getStatus() {
+        return status;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setOriginAccount(String originAccount) {
+        this.originAccount = originAccount;
+    }
+
+    public void setDestinationAccount(String destinationAccount) {
+        this.destinationAccount = destinationAccount;
+    }
+
+    public void setTransferDate(LocalDateTime transferDate) {
+        this.transferDate = transferDate;
+    }
+
+    public void setScheduleDate(LocalDateTime scheduleDate) {
+        this.scheduleDate = scheduleDate;
+    }
+
+    public void setAmount(Float amount) {
+        this.amount = amount;
+    }
+
+    public void setStatus(TransferStatus status) {
+        this.status = status;
+    }
 }
