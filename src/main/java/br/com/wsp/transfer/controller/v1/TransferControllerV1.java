@@ -2,12 +2,17 @@ package br.com.wsp.transfer.controller.v1;
 
 import br.com.wsp.transfer.dto.TransferDto;
 import br.com.wsp.transfer.service.ITransferService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -23,17 +28,17 @@ public class TransferControllerV1 {
     }
 
     @PostMapping
-    public ResponseEntity<EntityModel<TransferDto>> save(@RequestBody TransferDto transferDto) {
+    public ResponseEntity<EntityModel<TransferDto>> save(@RequestBody @Valid TransferDto transferDto) {
 
-        TransferDto schedulingSaved = service.save(transferDto);
+        Optional<TransferDto> saved = service.save(transferDto);
 
         EntityModel<TransferDto> model = EntityModel.of(
-                schedulingSaved, linkTo(methodOn(TransferControllerV1.class)
-                        .findOne(schedulingSaved.getId())).withSelfRel());
+                saved.get(), linkTo(methodOn(TransferControllerV1.class)
+                        .findById(saved.get().getId())).withSelfRel());
 
-        URI location =  ServletUriComponentsBuilder.fromCurrentRequest()
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/id")
-                .buildAndExpand(schedulingSaved.getId())
+                .buildAndExpand(saved.get().getId())
                 .toUri();
 
         return ResponseEntity.created(location).body(model);
@@ -41,10 +46,15 @@ public class TransferControllerV1 {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<TransferDto> findOne(@PathVariable Long id) {
+    public ResponseEntity<EntityModel<TransferDto>> findById(@PathVariable @Valid @NotNull UUID id) {
 
-        return ResponseEntity.ok(new TransferDto());
+        Optional<TransferDto> byId = service.findById(id);
+
+        EntityModel<TransferDto> entityModel = EntityModel.of(byId.get());
+        entityModel.add(linkTo(methodOn(TransferControllerV1.class).findById(byId.get().getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(TransferControllerV1.class)).withRel(IanaLinkRelations.COLLECTION));
+
+        return ResponseEntity.ok(entityModel);
     }
-
 
 }

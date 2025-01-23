@@ -2,23 +2,34 @@ package br.com.wsp.transfer.dto;
 
 import br.com.wsp.transfer.model.Transfer;
 import br.com.wsp.transfer.model.enums.TransferStatus;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.hateoas.EntityModel;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class TransferDto extends EntityModel<TransferDto> {
 
-    private Long id;
+    private UUID id;
     @NotNull
+    @NotEmpty
+    private String cpf;
+    @NotNull
+    @NotEmpty
     private String originAccount;
     @NotNull
+    @NotEmpty
     private String destinationAccount;
     @NotNull
+    @NotEmpty
     private LocalDateTime transferDate;
     @NotNull
+    @NotEmpty
     private LocalDateTime scheduleDate;
-    private Float amount;
+    private BigDecimal amount;
+    private BigDecimal interestRate;
     private TransferStatus status;
 
     public TransferDto() {
@@ -26,16 +37,22 @@ public class TransferDto extends EntityModel<TransferDto> {
 
     public TransferDto(Transfer transfer) {
         this.id = transfer.getId();
+        this.cpf = transfer.getCpf();
         this.originAccount = transfer.getOriginAccount();
         this.destinationAccount = transfer.getDestinationAccount();
         this.transferDate = transfer.getTransferDate();
         this.scheduleDate = transfer.getScheduleDate();
         this.amount = transfer.getAmount();
         this.status = transfer.getStatus();
+        this.interestRate = transfer.getInterestRate();
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
+    }
+
+    public String getCpf() {
+        return cpf;
     }
 
     public String getOriginAccount() {
@@ -54,16 +71,24 @@ public class TransferDto extends EntityModel<TransferDto> {
         return scheduleDate;
     }
 
-    public Float getAmount() {
+    public BigDecimal getAmount() {
         return amount;
+    }
+
+    public BigDecimal getInterestRate() {
+        return interestRate;
     }
 
     public TransferStatus getStatus() {
         return status;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
     }
 
     public void setOriginAccount(String originAccount) {
@@ -82,8 +107,12 @@ public class TransferDto extends EntityModel<TransferDto> {
         this.scheduleDate = scheduleDate;
     }
 
-    public void setAmount(Float amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public void setInterestRate(BigDecimal interestRate) {
+        this.interestRate = interestRate;
     }
 
     public void setStatus(TransferStatus status) {

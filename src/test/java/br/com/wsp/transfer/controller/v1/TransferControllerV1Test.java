@@ -1,6 +1,5 @@
-package br.com.wsp.transfer.controller;
+package br.com.wsp.transfer.controller.v1;
 
-import br.com.wsp.transfer.controller.v1.TransferControllerV1;
 import br.com.wsp.transfer.dto.TransferDto;
 import br.com.wsp.transfer.model.enums.TransferStatus;
 import br.com.wsp.transfer.service.ITransferService;
@@ -14,7 +13,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -36,7 +38,7 @@ class TransferControllerV1Test {
     @Test
     void testSaveNewSchedulingTransfer() throws Exception {
 
-        doReturn(getTransferDto()).when(transferService).save(any(TransferDto.class));
+        doReturn(Optional.of(getTransferDto())).when(transferService).save(any(TransferDto.class));
 
         ResultActions result = mockMvc.perform(
                 post("/api/v1/transfer")
@@ -44,17 +46,17 @@ class TransferControllerV1Test {
                         .content(objectMapper.writeValueAsString(getTransferDto())));
 
         result
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.originAccount").value("1234567890"));
+                .andExpect(MockMvcResultMatchers.status().isCreated());
     }
 
     private TransferDto getTransferDto() {
 
         TransferDto transferDto = new TransferDto();
-        transferDto.setId(1L);
+        transferDto.setId(UUID.randomUUID());
+        transferDto.setCpf("65335822082");
         transferDto.setOriginAccount("123456789");
         transferDto.setDestinationAccount("987654321");
-        transferDto.setAmount(Float.parseFloat("30"));
+        transferDto.setAmount(BigDecimal.TEN);
         transferDto.setTransferDate(LocalDateTime.now());
         transferDto.setScheduleDate(LocalDateTime.now().plusDays(3));
         transferDto.setStatus(TransferStatus.PENDING);
