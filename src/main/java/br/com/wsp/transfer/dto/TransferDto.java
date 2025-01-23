@@ -3,10 +3,11 @@ package br.com.wsp.transfer.dto;
 import br.com.wsp.transfer.model.Transfer;
 import br.com.wsp.transfer.model.enums.TransferStatus;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.hateoas.EntityModel;
 
 import java.time.LocalDateTime;
 
-public class TransferDto {
+public class TransferDto extends EntityModel<TransferDto> {
 
     private Long id;
     @NotNull
@@ -24,6 +25,7 @@ public class TransferDto {
     }
 
     public TransferDto(Transfer transfer) {
+        this.id = transfer.getId();
         this.originAccount = transfer.getOriginAccount();
         this.destinationAccount = transfer.getDestinationAccount();
         this.transferDate = transfer.getTransferDate();
