@@ -41,7 +41,7 @@ class TransferServiceTest {
     @Mock
     TransferDto transferDto;
     @Mock
-    Pageable pageable;
+    List<Transfer> transferList;
 
     @Test
     @DisplayName("Create Transfer Should Return Sucess")
@@ -107,15 +107,13 @@ class TransferServiceTest {
     void testFindAllTransfers__ShouldReturnPage() {
 
 
-        Page<Transfer> paged = new PageImpl<>(List.of(transfer));
+        doReturn(transferList).when(repository).findAll();
 
-        doReturn(paged).when(repository).findAll(any(Pageable.class));
+        List<TransferDto> all = service.findAll();
 
-        Page<TransferDto> transferPage = service.findAll(pageable);
+        assertNotNull(all);
 
-        assertNotNull(transferPage);
-
-        verify(repository, times(1)).findAll(any(Pageable.class));
+        verify(repository, times(1)).findAll();
     }
 
     @Test

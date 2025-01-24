@@ -29,9 +29,9 @@ public class TaxCalculatorService implements ITaxCalculatorService {
     @Override
     public BigDecimal calculateTax(LocalDateTime scheduleDate, BigDecimal transferValue) throws IllegalArgumentException {
 
-        validateInput(scheduleDate, transferValue);
-
         long daysToTransfer = ChronoUnit.DAYS.between(LocalDateTime.now(), scheduleDate);
+
+        validateInput(scheduleDate, transferValue, daysToTransfer);
 
         Optional<TaxCalculator> calculator = taxCalculators.stream()
                 .filter(c -> c.supports(daysToTransfer))
@@ -42,9 +42,9 @@ public class TaxCalculatorService implements ITaxCalculatorService {
                 .orElseThrow(() -> new IllegalArgumentException("No applicable tax found for " + daysToTransfer + " days."));
     }
 
-    private void validateInput(LocalDateTime scheduleDate, BigDecimal transferValue) {
+    private void validateInput(LocalDateTime scheduleDate, BigDecimal transferValue, Long daysToTransfer) {
 
-        if (scheduleDate.isBefore(LocalDateTime.now()) || transferValue.compareTo(BigDecimal.ZERO) <= 0) {
+        if ( daysToTransfer >= 51 ||scheduleDate.isBefore(LocalDateTime.now()) || transferValue.compareTo(BigDecimal.ZERO) <= 0 ) {
 
             logger.severe("Invalid transfer date or value.");
             throw new IllegalScheduleDateAndValueException("Transfer date or value is invalid.");

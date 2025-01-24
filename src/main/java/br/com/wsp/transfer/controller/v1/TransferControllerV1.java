@@ -9,9 +9,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
@@ -55,7 +52,7 @@ public class TransferControllerV1 {
 
         EntityModel<TransferDto> model = EntityModel.of(transfer,
                 linkTo(methodOn(TransferControllerV1.class).findById(transfer.getId())).withSelfRel(),
-                linkTo(methodOn(TransferControllerV1.class).findAll(0, 10)).withRel("all-transfers"),
+                linkTo(methodOn(TransferControllerV1.class).findAll()).withRel("all-transfers"),
                 linkTo(methodOn(TransferControllerV1.class).deleteById(transfer.getId())).withRel("delete-transfer-by-id")
         );
 
@@ -83,7 +80,7 @@ public class TransferControllerV1 {
 
         EntityModel<TransferDto> entityModel = EntityModel.of(transfer,
                 linkTo(methodOn(TransferControllerV1.class).findById(transfer.getId())).withSelfRel(),
-                linkTo(methodOn(TransferControllerV1.class).findAll(0, 10)).withRel("all-transfers"),
+                linkTo(methodOn(TransferControllerV1.class).findAll()).withRel("all-transfers"),
                 linkTo(methodOn(TransferControllerV1.class).deleteById(transfer.getId())).withRel("delete")
         );
 
@@ -97,14 +94,10 @@ public class TransferControllerV1 {
             @ApiResponse(responseCode = "400", description = "Parâmetros de paginação inválidos")
     })
     @GetMapping
-    public CollectionModel<EntityModel<TransferDto>> findAll(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size) {
+    public CollectionModel<EntityModel<TransferDto>> findAll() {
+        List<TransferDto> all = service.findAll();
 
-        Pageable pageable = PageRequest.of(page, size);
-        Page<TransferDto> transfersPage = service.findAll(pageable);
-
-        List<EntityModel<TransferDto>> transfers = transfersPage.getContent().stream()
+        List<EntityModel<TransferDto>> transfers = all.stream()
                 .map(transfer -> EntityModel.of(transfer,
                         linkTo(methodOn(TransferControllerV1.class).findById(transfer.getId())).withSelfRel(),
                         linkTo(methodOn(TransferControllerV1.class).deleteById(transfer.getId())).withRel("delete")
@@ -112,9 +105,7 @@ public class TransferControllerV1 {
                 .toList();
 
         return CollectionModel.of(transfers,
-                linkTo(methodOn(TransferControllerV1.class).findAll(page, size)).withSelfRel(),
-                linkTo(methodOn(TransferControllerV1.class).findAll(page + 1, size)).withRel("next-page").expand(),
-                page > 0 ? linkTo(methodOn(TransferControllerV1.class).findAll(page - 1, size)).withRel("previous-page").expand() : null
+                linkTo(methodOn(TransferControllerV1.class).findAll()).withSelfRel()
         );
     }
 

@@ -10,14 +10,14 @@ import br.com.wsp.transfer.service.ITaxCalculatorService;
 import br.com.wsp.transfer.service.ITransferService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class TransferService implements ITransferService {
@@ -76,9 +76,9 @@ public class TransferService implements ITransferService {
     }
 
     @Override
-    public Page<TransferDto> findAll(Pageable pageable) {
+    public List<TransferDto> findAll() {
         logger.info("FIND ALL TRANSFER");
-        return repository.findAll(pageable).map(TransferDto::new);
+        return repository.findAll().stream().map(TransferDto::new).collect(Collectors.toUnmodifiableList());
     }
 
 
