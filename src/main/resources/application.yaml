@@ -1,1 +1,11 @@
-spring.application.name=transfer-api
+spring:
+  application:
+    name: transfer-api
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enable: true
+  show-actuator: true

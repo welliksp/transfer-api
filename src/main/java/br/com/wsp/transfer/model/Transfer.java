@@ -24,8 +24,6 @@ public class Transfer implements Serializable {
     @Column(name = "destination_account", nullable = false, length = 10)
     private String destinationAccount;
 
-    @Column(name = "transfer_date", nullable = false)
-    private LocalDateTime transferDate;
 
     @Column(name = "schedule_date", nullable = false)
     private LocalDateTime scheduleDate;
@@ -38,10 +36,12 @@ public class Transfer implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private TransferStatus status;
-
     public UUID getId() {
         return id;
     }
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     public String getCpf() {
         return cpf;
@@ -55,8 +55,8 @@ public class Transfer implements Serializable {
         return destinationAccount;
     }
 
-    public LocalDateTime getTransferDate() {
-        return transferDate;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public LocalDateTime getScheduleDate() {
@@ -91,8 +91,8 @@ public class Transfer implements Serializable {
         this.destinationAccount = destinationAccount;
     }
 
-    public void setTransferDate(LocalDateTime transferDate) {
-        this.transferDate = transferDate;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public void setScheduleDate(LocalDateTime scheduleDate) {

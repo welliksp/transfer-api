@@ -2,16 +2,20 @@ package br.com.wsp.transfer.controller.v1;
 
 import br.com.wsp.transfer.dto.TransferDto;
 import br.com.wsp.transfer.service.ITransferService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
@@ -31,49 +35,98 @@ public class TransferControllerV1 {
         this.service = service;
     }
 
+
+    @Operation(summary = "Cria uma nova transferência", description = "Cria uma transferência e retorna o recurso com os links de HATEOAS.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Transferência criada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TransferDto.class))),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição")
+    })
     @PostMapping
     public ResponseEntity<EntityModel<TransferDto>> save(@RequestBody @Valid TransferDto transferDto) {
-
         Optional<TransferDto> saved = service.save(transferDto);
 
-        EntityModel<TransferDto> model = EntityModel.of(
-                saved.get(), linkTo(methodOn(TransferControllerV1.class)
-                        .findById(saved.get().getId())
-                        ).withSelfRel());
+        if (saved.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/id")
-                .buildAndExpand(saved.get().getId())
-                .toUri();
+        TransferDto transfer = saved.get();
+
+        EntityModel<TransferDto> model = EntityModel.of(transfer,
+                linkTo(methodOn(TransferControllerV1.class).findById(transfer.getId())).withSelfRel(),
+                linkTo(methodOn(TransferControllerV1.class).findAll(0, 10)).withRel("all-transfers"),
+                linkTo(methodOn(TransferControllerV1.class).deleteById(transfer.getId())).withRel("delete-transfer-by-id")
+        );
+
+        URI location = linkTo(methodOn(TransferControllerV1.class).findById(transfer.getId())).toUri();
 
         return ResponseEntity.created(location).body(model);
     }
 
-
+    @Operation(summary = "Consulta uma transferência por ID", description = "Retorna os detalhes de uma transferência específica.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Transferência encontrada",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TransferDto.class))),
+            @ApiResponse(responseCode = "404", description = "Transferência não encontrada")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<TransferDto>> findById(@PathVariable @Valid @NotNull UUID id) {
-
         Optional<TransferDto> byId = service.findById(id);
 
-        EntityModel<TransferDto> entityModel = EntityModel.of(byId.get());
-        entityModel.add(linkTo(methodOn(TransferControllerV1.class).findById(byId.get().getId())).withSelfRel());
+        if (byId.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        TransferDto transfer = byId.get();
+
+        EntityModel<TransferDto> entityModel = EntityModel.of(transfer,
+                linkTo(methodOn(TransferControllerV1.class).findById(transfer.getId())).withSelfRel(),
+                linkTo(methodOn(TransferControllerV1.class).findAll(0, 10)).withRel("all-transfers"),
+                linkTo(methodOn(TransferControllerV1.class).deleteById(transfer.getId())).withRel("delete")
+        );
 
         return ResponseEntity.ok(entityModel);
     }
 
-
+    @Operation(summary = "Lista todas as transferências", description = "Retorna uma lista paginada de transferências.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Transferências retornadas com sucesso",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Parâmetros de paginação inválidos")
+    })
     @GetMapping
-    public CollectionModel<EntityModel<TransferDto>> getTransfers(
+    public CollectionModel<EntityModel<TransferDto>> findAll(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size) {
-        Page<TransferDto> transfersPage = service.findAll(PageRequest.of(page, size));
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TransferDto> transfersPage = service.findAll(pageable);
 
         List<EntityModel<TransferDto>> transfers = transfersPage.getContent().stream()
                 .map(transfer -> EntityModel.of(transfer,
-                        linkTo(methodOn(TransferControllerV1.class).getTransfers(page, size)).withSelfRel()))
+                        linkTo(methodOn(TransferControllerV1.class).findById(transfer.getId())).withSelfRel(),
+                        linkTo(methodOn(TransferControllerV1.class).deleteById(transfer.getId())).withRel("delete")
+                ))
                 .toList();
 
         return CollectionModel.of(transfers,
-                linkTo(methodOn(TransferControllerV1.class).getTransfers(page, size)).withSelfRel());
+                linkTo(methodOn(TransferControllerV1.class).findAll(page, size)).withSelfRel(),
+                linkTo(methodOn(TransferControllerV1.class).findAll(page + 1, size)).withRel("next-page").expand(),
+                page > 0 ? linkTo(methodOn(TransferControllerV1.class).findAll(page - 1, size)).withRel("previous-page").expand() : null
+        );
+    }
+
+    @Operation(summary = "Deleta uma transferência por ID", description = "Remove uma transferência do sistema.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Transferência deletada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Transferência não encontrada")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteById(@PathVariable @Valid @NotNull UUID id) {
+        service.deleteById(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

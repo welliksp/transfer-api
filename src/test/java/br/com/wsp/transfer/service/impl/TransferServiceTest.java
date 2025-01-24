@@ -1,9 +1,11 @@
 package br.com.wsp.transfer.service.impl;
 
 import br.com.wsp.transfer.dto.TransferDto;
+import br.com.wsp.transfer.exception.TransferBadRequestException;
 import br.com.wsp.transfer.exception.TransferNotFoundException;
 import br.com.wsp.transfer.model.Transfer;
 import br.com.wsp.transfer.repository.TransferRepository;
+import br.com.wsp.transfer.service.ITaxCalculatorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +33,8 @@ class TransferServiceTest {
     @InjectMocks
     TransferService service;
     @Mock
+    ITaxCalculatorService taxService;
+    @Mock
     TransferRepository repository;
     @Mock
     Transfer transfer;
@@ -36,20 +42,39 @@ class TransferServiceTest {
     TransferDto transferDto;
     @Mock
     Pageable pageable;
-    @Mock
-    Page<Transfer> page;
 
     @Test
     @DisplayName("Create Transfer Should Return Sucess")
     void testCreateTransfer__shouldReturnSucess() {
 
         doReturn(transfer).when(repository).save(any(Transfer.class));
+        doReturn(BigDecimal.TEN).when(taxService).calculateTax(any(LocalDateTime.class), any(BigDecimal.class));
+        doReturn(LocalDateTime.now().plusDays(3)).when(transferDto).getScheduleDate();
+        doReturn(BigDecimal.TEN).when(transferDto).getTransferValue();
 
         Optional<TransferDto> result = service.save(transferDto);
 
         assertNotNull(result);
 
         verify(repository, times(1)).save(any(Transfer.class));
+        verify(taxService, times(1)).calculateTax(any(LocalDateTime.class), any(BigDecimal.class));
+    }
+
+    @Test
+    @DisplayName("Create Transfer Should Return Exception")
+    void testCreateTransfer__shouldReturnException() {
+
+        doThrow(TransferBadRequestException.class).when(repository).save(any(Transfer.class));
+
+        doReturn(BigDecimal.TEN).when(taxService).calculateTax(any(LocalDateTime.class), any(BigDecimal.class));
+        doReturn(LocalDateTime.now().plusDays(3)).when(transferDto).getScheduleDate();
+        doReturn(BigDecimal.TEN).when(transferDto).getTransferValue();
+
+        assertThrows(TransferBadRequestException.class, () -> service.save(transferDto));
+
+
+        verify(repository, times(1)).save(any(Transfer.class));
+        verify(taxService, times(1)).calculateTax(any(LocalDateTime.class), any(BigDecimal.class));
     }
 
     @Test
@@ -95,12 +120,15 @@ class TransferServiceTest {
 
     @Test
     @DisplayName("Delete Transfer By Id Should Return Sucess")
-    void testDeleteTransferScheduling__shouldReturnSucess() {
+    void testDeleteByIdTransferScheduling__shouldReturnSucess() {
 
         UUID uuid = UUID.randomUUID();
 
-        service.delete(uuid);
+        doReturn(Optional.of(transfer)).when(repository).findById(any(UUID.class));
+        when(transfer.getId()).thenReturn(uuid);
 
-        verify(repository, times(1)).deleteById(any(UUID.class));
+        service.deleteById(uuid);
+
+        verify(repository, times(1)).deleteById(uuid);
     }
 }

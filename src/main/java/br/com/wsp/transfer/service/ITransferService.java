@@ -15,5 +15,5 @@ public interface ITransferService {
 
     Page<TransferDto> findAll(Pageable pageable);
 
-    void delete(UUID uuid);
+    void deleteById(UUID uuid);
 }

@@ -57,7 +57,7 @@ class TransferControllerV1Test {
         transferDto.setOriginAccount("123456789");
         transferDto.setDestinationAccount("987654321");
         transferDto.setTransferValue(BigDecimal.TEN);
-        transferDto.setTransferDate(LocalDateTime.now());
+        transferDto.setCreatedAt(LocalDateTime.now());
         transferDto.setScheduleDate(LocalDateTime.now().plusDays(3));
         transferDto.setStatus(TransferStatus.PENDING);
 

@@ -1,6 +1,7 @@
 package br.com.wsp.transfer.service.impl;
 
 import br.com.wsp.transfer.dto.TransferDto;
+import br.com.wsp.transfer.exception.TransferBadRequestException;
 import br.com.wsp.transfer.exception.TransferNotFoundException;
 import br.com.wsp.transfer.model.Transfer;
 import br.com.wsp.transfer.model.enums.TransferStatus;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,14 +45,23 @@ public class TransferService implements ITransferService {
         transfer.setCpf(transferDto.getCpf());
         transfer.setOriginAccount(transferDto.getOriginAccount());
         transfer.setDestinationAccount(transferDto.getDestinationAccount());
-        transfer.setTransferDate(transferDto.getTransferDate());
+        transfer.setCreatedAt(LocalDateTime.now());
         transfer.setScheduleDate(transferDto.getScheduleDate());
         transfer.setTransferValue(transferDto.getTransferValue());
         transfer.setInterestRate(tax);
         transfer.setStatus(TransferStatus.PENDING);
 
         logger.info("SAVE TRANSFER");
-        Transfer transferSaved = repository.save(transfer);
+        Transfer transferSaved;
+        try {
+
+            transferSaved = repository.save(transfer);
+
+        } catch (Exception exception) {
+
+            logger.error(exception.getMessage());
+            throw new TransferBadRequestException();
+        }
         logger.info("TRANSFER SAVED ID: {}", transferSaved.getId());
         return Optional.of(new TransferDto(transferSaved));
     }
@@ -66,19 +77,18 @@ public class TransferService implements ITransferService {
 
     @Override
     public Page<TransferDto> findAll(Pageable pageable) {
-
         logger.info("FIND ALL TRANSFER");
-        Page<Transfer> transferPage = repository.findAll(pageable);
-        Page<TransferDto> map = transferPage.map(TransferDto::new);
-        return map;
+        return repository.findAll(pageable).map(TransferDto::new);
     }
 
 
     @Override
-    public void delete(UUID uuid) {
+    public void deleteById(UUID uuid) {
+
+        TransferDto transferDto = findById(uuid).get();
 
         logger.info("DELETE TRANSFER BY ID: {}", uuid);
-        repository.deleteById(uuid);
+        repository.deleteById(transferDto.getId());
     }
 
 }

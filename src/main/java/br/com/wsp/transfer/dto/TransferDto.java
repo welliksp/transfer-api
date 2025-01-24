@@ -23,12 +23,11 @@ public class TransferDto extends EntityModel<TransferDto> {
     @NotEmpty
     private String destinationAccount;
     @NotNull
-    private LocalDateTime transferDate;
-    @NotNull
     private LocalDateTime scheduleDate;
     private BigDecimal transferValue;
     private BigDecimal interestRate;
     private TransferStatus status;
+    private LocalDateTime createdAt;
 
     public TransferDto() {
     }
@@ -38,7 +37,7 @@ public class TransferDto extends EntityModel<TransferDto> {
         this.cpf = transfer.getCpf();
         this.originAccount = transfer.getOriginAccount();
         this.destinationAccount = transfer.getDestinationAccount();
-        this.transferDate = transfer.getTransferDate();
+        this.createdAt = transfer.getCreatedAt();
         this.scheduleDate = transfer.getScheduleDate();
         this.transferValue = transfer.getTransferValue();
         this.status = transfer.getStatus();
@@ -62,8 +61,8 @@ public class TransferDto extends EntityModel<TransferDto> {
         return destinationAccount;
     }
 
-    public LocalDateTime getTransferDate() {
-        return transferDate;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public LocalDateTime getScheduleDate() {
@@ -98,8 +97,8 @@ public class TransferDto extends EntityModel<TransferDto> {
         this.destinationAccount = destinationAccount;
     }
 
-    public void setTransferDate(LocalDateTime transferDate) {
-        this.transferDate = transferDate;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public void setScheduleDate(LocalDateTime scheduleDate) {
