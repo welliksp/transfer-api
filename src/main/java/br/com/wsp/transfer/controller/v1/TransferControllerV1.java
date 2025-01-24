@@ -4,6 +4,9 @@ import br.com.wsp.transfer.dto.TransferDto;
 import br.com.wsp.transfer.service.ITransferService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,7 +38,8 @@ public class TransferControllerV1 {
 
         EntityModel<TransferDto> model = EntityModel.of(
                 saved.get(), linkTo(methodOn(TransferControllerV1.class)
-                        .findById(saved.get().getId())).withSelfRel());
+                        .findById(saved.get().getId())
+                        ).withSelfRel());
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/id")
@@ -52,9 +57,23 @@ public class TransferControllerV1 {
 
         EntityModel<TransferDto> entityModel = EntityModel.of(byId.get());
         entityModel.add(linkTo(methodOn(TransferControllerV1.class).findById(byId.get().getId())).withSelfRel());
-        entityModel.add(linkTo(methodOn(TransferControllerV1.class)).withRel(IanaLinkRelations.COLLECTION));
 
         return ResponseEntity.ok(entityModel);
     }
 
+
+    @GetMapping
+    public CollectionModel<EntityModel<TransferDto>> getTransfers(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        Page<TransferDto> transfersPage = service.findAll(PageRequest.of(page, size));
+
+        List<EntityModel<TransferDto>> transfers = transfersPage.getContent().stream()
+                .map(transfer -> EntityModel.of(transfer,
+                        linkTo(methodOn(TransferControllerV1.class).getTransfers(page, size)).withSelfRel()))
+                .toList();
+
+        return CollectionModel.of(transfers,
+                linkTo(methodOn(TransferControllerV1.class).getTransfers(page, size)).withSelfRel());
+    }
 }

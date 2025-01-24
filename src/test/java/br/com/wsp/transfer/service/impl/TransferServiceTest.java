@@ -10,15 +10,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TransferServiceTest {
@@ -31,16 +34,22 @@ class TransferServiceTest {
     Transfer transfer;
     @Mock
     TransferDto transferDto;
+    @Mock
+    Pageable pageable;
+    @Mock
+    Page<Transfer> page;
 
     @Test
     @DisplayName("Create Transfer Should Return Sucess")
     void testCreateTransfer__shouldReturnSucess() {
 
-        doReturn(Optional.of(transfer)).when(repository).save(any(Transfer.class));
+        doReturn(transfer).when(repository).save(any(Transfer.class));
 
         Optional<TransferDto> result = service.save(transferDto);
 
-        assertNotNull(result.get());
+        assertNotNull(result);
+
+        verify(repository, times(1)).save(any(Transfer.class));
     }
 
     @Test
@@ -51,7 +60,9 @@ class TransferServiceTest {
 
         Optional<TransferDto> result = service.findById(UUID.randomUUID());
 
-        assertNotNull(result.get());
+        assertNotNull(result);
+
+        verify(repository, times(1)).findById(any(UUID.class));
     }
 
 
@@ -62,5 +73,34 @@ class TransferServiceTest {
         doThrow(TransferNotFoundException.class).when(repository).findById(any(UUID.class));
 
         assertThrows(TransferNotFoundException.class, () -> service.findById(UUID.randomUUID()));
+
+        verify(repository, times(1)).findById(any(UUID.class));
+    }
+
+    @Test
+    @DisplayName("Find All Transfers Should Return Page")
+    void testFindAllTransfers__ShouldReturnPage() {
+
+
+        Page<Transfer> paged = new PageImpl<>(List.of(transfer));
+
+        doReturn(paged).when(repository).findAll(any(Pageable.class));
+
+        Page<TransferDto> transferPage = service.findAll(pageable);
+
+        assertNotNull(transferPage);
+
+        verify(repository, times(1)).findAll(any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("Delete Transfer By Id Should Return Sucess")
+    void testDeleteTransferScheduling__shouldReturnSucess() {
+
+        UUID uuid = UUID.randomUUID();
+
+        service.delete(uuid);
+
+        verify(repository, times(1)).deleteById(any(UUID.class));
     }
 }

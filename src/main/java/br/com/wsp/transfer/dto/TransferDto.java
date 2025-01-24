@@ -23,12 +23,10 @@ public class TransferDto extends EntityModel<TransferDto> {
     @NotEmpty
     private String destinationAccount;
     @NotNull
-    @NotEmpty
     private LocalDateTime transferDate;
     @NotNull
-    @NotEmpty
     private LocalDateTime scheduleDate;
-    private BigDecimal amount;
+    private BigDecimal transferValue;
     private BigDecimal interestRate;
     private TransferStatus status;
 
@@ -42,9 +40,10 @@ public class TransferDto extends EntityModel<TransferDto> {
         this.destinationAccount = transfer.getDestinationAccount();
         this.transferDate = transfer.getTransferDate();
         this.scheduleDate = transfer.getScheduleDate();
-        this.amount = transfer.getAmount();
+        this.transferValue = transfer.getTransferValue();
         this.status = transfer.getStatus();
         this.interestRate = transfer.getInterestRate();
+
     }
 
     public UUID getId() {
@@ -71,8 +70,8 @@ public class TransferDto extends EntityModel<TransferDto> {
         return scheduleDate;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public BigDecimal getTransferValue() {
+        return transferValue;
     }
 
     public BigDecimal getInterestRate() {
@@ -107,8 +106,8 @@ public class TransferDto extends EntityModel<TransferDto> {
         this.scheduleDate = scheduleDate;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setTransferValue(BigDecimal transferValue) {
+        this.transferValue = transferValue;
     }
 
     public void setInterestRate(BigDecimal interestRate) {

@@ -30,7 +30,8 @@ public class Transfer implements Serializable {
     @Column(name = "schedule_date", nullable = false)
     private LocalDateTime scheduleDate;
 
-    private BigDecimal amount;
+    @Column(name = "transfer_value")
+    private BigDecimal transferValue;
 
     @Column(name = "interest_rate", nullable = false)
     private BigDecimal interestRate;
@@ -62,8 +63,8 @@ public class Transfer implements Serializable {
         return scheduleDate;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public BigDecimal getTransferValue() {
+        return transferValue;
     }
 
     public TransferStatus getStatus() {
@@ -98,8 +99,8 @@ public class Transfer implements Serializable {
         this.scheduleDate = scheduleDate;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setTransferValue(BigDecimal transferValue) {
+        this.transferValue = transferValue;
     }
 
     public void setStatus(TransferStatus status) {

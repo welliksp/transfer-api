@@ -1,6 +1,7 @@
 package br.com.wsp.transfer.exception.handler;
 
 import br.com.wsp.transfer.dto.ApiError;
+import br.com.wsp.transfer.exception.IllegalScheduleDateAndValueException;
 import br.com.wsp.transfer.exception.TransferBadRequest;
 import br.com.wsp.transfer.exception.TransferNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,14 @@ public class GlobalExceptionHandler {
         ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.name(), List.of(ex.getMessage()));
 
         return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(IllegalScheduleDateAndValueException.class)
+    public ResponseEntity<ApiError> illegalSheduleDateAndValueException(Exception ex) {
+
+        ApiError apiError = new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.name(), List.of(ex.getMessage()));
+
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
 }
